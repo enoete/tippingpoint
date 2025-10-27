@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Farm Management Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background-color: #f9fafb;
+            color: #1f2937;
+        }
+        .header {
+            background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+            color: white;
+            padding: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .header h1 { font-size: 2rem; font-weight: bold; margin-bottom: 0.5rem; }
+        .header p { color: #dcfce7; }
+        .nav-tabs {
+            background-color: white;
+            border-bottom: 1px solid #e5e7eb;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+        }
+        .nav-container {
+            max-width: 80rem;
+            margin: 0 auto;
+            padding: 0 1rem;
+            display: flex;
+            gap: 2rem;
+        }
+        .nav-button {
+            padding: 1rem 0.5rem;
+            border: none;
+            border-bottom: 2px solid transparent;
+            background: none;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #6b7280;
+        }
+        .nav-button:hover { color: #374151; }
+        .nav-button.active {
+            border-bottom-color: #16a34a;
+            color: #16a34a;
+        }
+        .container {
+            max-width: 80rem;
+            margin: 0 auto;
+            padding: 1.5rem;
+        }
+        .card {
+            background: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .card h2, .card h3 {
+            font-size: 1.25rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+        }
+        .grid {
+            display: grid;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .grid-4 { grid-template-columns: repeat(4, 1fr); }
+        .grid-3 { grid-template-columns: repeat(3, 1fr); }
+        .grid-2 { grid-template-columns: repeat(2, 1fr); }
+        @media (max-width: 768px) {
+            .grid-4, .grid-3, .grid-2 { grid-template-columns: 1fr; }
+        }
+        .stat-card {
+            background: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+        }
+        .stat-card.green { background-color: #f0fdf4; }
+        .stat-card.blue { background-color: #eff6ff; }
+        .stat-card.amber { background-color: #fffbeb; }
+        .stat-card.purple { background-color: #faf5ff; }
+        .stat-card.red { background-color: #fef2f2; }
+        .stat-label {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-bottom: 0.25rem;
+        }
+        .stat-value {
+            font-size: 1.875rem;
+            font-weight: bold;
+        }
+        .stat-value.green { color: #16a34a; }
+        .stat-value.blue { color: #2563eb; }
+        .stat-value.amber { color: #d97706; }
+        .stat-value.purple { color: #9333ea; }
+        .stat-value.red { color: #dc2626; }
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        .filter-bar {
+            background: #f9fafb;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            align-items: end;
+        }
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+        .filter-group label {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #374151;
+        }
+        input, select {
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: #16a34a;
+            box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.1);
+        }
+        button.btn-primary {
+            background-color: #16a34a;
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        button.btn-primary:hover { background-color: #15803d; }
+        button.btn-secondary {
+            background-color: #6b7280;
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        button.btn-secondary:hover { background-color: #4b5563; }
+        button.btn-danger {
+            background-color: #dc2626;
+            color: white;
+            padding: 0.375rem 0.75rem;
+            border: none;
+            border-radius: 0.375rem;
+            cursor: pointer;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.875rem;
+        }
+        thead { background-color: #f9fafb; }
+        th {
+            text-align: left;
+            padding: 0.75rem 1rem;
+            font-weight: 600;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        tbody tr:hover { background-color: #f9fafb; }
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        .badge.green { background-color: #dcfce7; color: #166534; }
+        .badge.blue { background-color: #dbeafe; color: #1e40af; }
+        .badge.red { background-color: #fee2e2; color: #991b1b; }
+        .badge.yellow { background-color: #fef3c7; color: #92400e; }
+        .badge.amber { background-color: #ffedd5; color: #9a3412; }
+        .badge.purple { background-color: #f3e8ff; color: #6b21a8; }
+        .alert {
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid;
+        }
+        .alert.warning {
+            background-color: #fef3c7;
+            border-left-color: #f59e0b;
+        }
+        .alert.urgent {
+            background-color: #fee2e2;
+            border-left-color: #dc2626;
+        }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .overflow-auto { overflow-x: auto; }
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #6b7280;
+        }
+        .report-card {
+            background: white;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid #e5e7eb;
+        }
+        .report-card h4 {
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+            color: #374151;
+        }
+        .report-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #16a34a;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🌾 Farm Management Dashboard</h1>
+        <p>Multi-user farm operations tracking with real-time data sync</p>
+    </div>
+
+    <div class="nav-tabs">
+        <div class="nav-container">
+            <button class="nav-button active" onclick="switchTab('overview')">Overview</button>
+            <button class="nav-button" onclick="switchTab('poultry')">Poultry</button>
+            <button class="nav-button" onclick="switchTab('crops')">Crops</button>
+            <button class="nav-button" onclick="switchTab('inputs')">Farm Inputs</button>
+            <button class="nav-button" onclick="switchTab('reports')">Reports</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Overview Tab -->
+        <div id="overview-tab" class="tab-content active">
+            <div class="grid grid-4">
+                <div class="stat-card green">
+                    <div class="stat-label">Total Poultry</div>
+                    <div class="stat-value green" id="total-poultry">0</div>
+                </div>
+                <div class="stat-card blue">
+                    <div class="stat-label">Total Eggs</div>
+                    <div class="stat-value blue" id="total-eggs">0</div>
+                </div>
+                <div class="stat-card amber">
+                    <div class="stat-label">Crop Area</div>
+                    <div class="stat-value amber"><span id="total-crop-area">0</span> acres</div>
+                </div>
+                <div class="stat-card purple">
+                    <div class="stat-label">Input Costs</div>
+                    <div class="stat-value purple">$<span id="total-inputs-cost">0</span></div>
+                </div>
+            </div>
+            <div id="alerts-section"></div>
+        </div>
+
+        <!-- Poultry Tab -->
+        <div id="poultry-tab" class="tab-content">
+            <div class="card">
+                <h2>Add Poultry Record</h2>
+                <form id="poultry-form" class="form-grid">
+                    <input type="date" id="p-date" required>
+                    <select id="p-type" required>
+                        <option value="">Select Type</option>
+                        <option value="Layers">Layers</option>
+                        <option value="Broilers">Broilers</option>
+                    </select>
+                    <input type="number" id="p-count" placeholder="Bird Count" required>
+                    <input type="number" id="p-eggs" placeholder="Eggs Collected">
+                    <input type="number" id="p-feed" placeholder="Feed (kg)">
+                    <input type="number" id="p-mortality" placeholder="Mortality">
+                    <input type="text" id="p-batch" placeholder="Batch Name">
+                    <input type="text" id="p-notes" placeholder="Notes">
+                    <button type="submit" class="btn-primary">Add Record</button>
+                </form>
+            </div>
+
+            <!-- Filters -->
+            <div class="card">
+                <h3>Filter Records</h3>
+                <div class="filter-bar">
+                    <div class="filter-group">
+                        <label>Start Date</label>
+                        <input type="date" id="p-filter-start">
+                    </div>
+                    <div class="filter-group">
+                        <label>End Date</label>
+                        <input type="date" id="p-filter-end">
+                    </div>
+                    <div class="filter-group">
+                        <label>Type</label>
+                        <select id="p-filter-type">
+                            <option value="">All Types</option>
+                            <option value="Layers">Layers</option>
+                            <option value="Broilers">Broilers</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Batch</label>
+                        <input type="text" id="p-filter-batch" placeholder="Batch name">
+                    </div>
+                    <button class="btn-primary" onclick="filterPoultry()">Apply Filters</button>
+                    <button class="btn-secondary" onclick="clearPoultryFilters()">Clear</button>
+                </div>
+            </div>
+
+            <div class="card overflow-auto">
+                <div id="poultry-loading" class="loading">Loading...</div>
+                <table id="poultry-table-container" style="display:none;">
+                    <thead>
+                        <tr>
+                            <th>Date</th><th>Type</th><th>Batch</th><th>Count</th>
+                            <th>Eggs</th><th>Feed (kg)</th><th>Mortality</th><th>Notes</th><th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="poultry-table"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Crops Tab -->
+        <div id="crops-tab" class="tab-content">
+            <div class="card">
+                <h2>Add Crop Record</h2>
+                <form id="crop-form" class="form-grid">
+                    <input type="date" id="c-date" required>
+                    <input type="text" id="c-name" placeholder="Crop Name" required>
+                    <input type="number" id="c-area" placeholder="Area (acres)" required step="0.1">
+                    <select id="c-stage">
+                        <option value="">Select Stage</option>
+                        <option value="Planting">Planting</option>
+                        <option value="Growing">Growing</option>
+                        <option value="Flowering">Flowering</option>
+                        <option value="Harvest">Harvest</option>
+                    </select>
+                    <input type="number" id="c-yield" placeholder="Yield" step="0.1">
+                    <input type="text" id="c-activities" placeholder="Activities">
+                    <input type="number" id="c-cost" placeholder="Cost ($)" step="0.01">
+                    <button type="submit" class="btn-primary">Add Record</button>
+                </form>
+            </div>
+
+            <!-- Filters -->
+            <div class="card">
+                <h3>Filter Records</h3>
+                <div class="filter-bar">
+                    <div class="filter-group">
+                        <label>Start Date</label>
+                        <input type="date" id="c-filter-start">
+                    </div>
+                    <div class="filter-group">
+                        <label>End Date</label>
+                        <input type="date" id="c-filter-end">
+                    </div>
+                    <div class="filter-group">
+                        <label>Crop</label>
+                        <input type="text" id="c-filter-crop" placeholder="Crop name">
+                    </div>
+                    <div class="filter-group">
+                        <label>Stage</label>
+                        <select id="c-filter-stage">
+                            <option value="">All Stages</option>
+                            <option value="Planting">Planting</option>
+                            <option value="Growing">Growing</option>
+                            <option value="Flowering">Flowering</option>
+                            <option value="Harvest">Harvest</option>
+                        </select>
+                    </div>
+                    <button class="btn-primary" onclick="filterCrops()">Apply Filters</button>
+                    <button class="btn-secondary" onclick="clearCropFilters()">Clear</button>
+                </div>
+            </div>
+
+            <div class="card overflow-auto">
+                <div id="crops-loading" class="loading">Loading...</div>
+                <table id="crops-table-container" style="display:none;">
+                    <thead>
+                        <tr>
+                            <th>Date</th><th>Crop</th><th>Area</th><th>Stage</th>
+                            <th>Yield</th><th>Activities</th><th>Cost</th><th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="crop-table"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Inputs Tab -->
+        <div id="inputs-tab" class="tab-content">
+            <div class="card">
+                <h2>Add Farm Input</h2>
+                <form id="input-form" class="form-grid">
+                    <input type="date" id="i-date" required>
+                    <select id="i-category" required>
+                        <option value="">Category</option>
+                        <option value="Fertilizer">Fertilizer</option>
+                        <option value="Pesticide">Pesticide</option>
+                        <option value="Herbicide">Herbicide</option>
+                        <option value="Feed">Feed</option>
+                        <option value="Vitamins">Vitamins</option>
+                        <option value="Other">Other</option>
+                    </select>
+                    <input type="text" id="i-name" placeholder="Product Name" required>
+                    <input type="number" id="i-qty" placeholder="Quantity" required step="0.01">
+                    <input type="text" id="i-unit" placeholder="Unit (kg, liters)">
+                    <input type="text" id="i-supplier" placeholder="Supplier">
+                    <input type="number" id="i-cost" placeholder="Cost ($)" step="0.01">
+                    <input type="text" id="i-used" placeholder="Used For">
+                    <input type="number" id="i-stock" placeholder="Current Stock" step="0.01">
+                    <input type="number" id="i-min" placeholder="Min Stock" step="0.01">
+                    <input type="number" id="i-rate" placeholder="Usage Rate/day" step="0.01">
+                    <input type="text" id="i-notes" placeholder="Notes">
+                    <button type="submit" class="btn-primary">Add Input</button>
+                </form>
+            </div>
+
+            <!-- Filters -->
+            <div class="card">
+                <h3>Filter Records</h3>
+                <div class="filter-bar">
+                    <div class="filter-group">
+                        <label>Start Date</label>
+                        <input type="date" id="i-filter-start">
+                    </div>
+                    <div class="filter-group">
+                        <label>End Date</label>
+                        <input type="date" id="i-filter-end">
+                    </div>
+                    <div class="filter-group">
+                        <label>Category</label>
+                        <select id="i-filter-category">
+                            <option value="">All Categories</option>
+                            <option value="Fertilizer">Fertilizer</option>
+                            <option value="Pesticide">Pesticide</option>
+                            <option value="Herbicide">Herbicide</option>
+                            <option value="Feed">Feed</option>
+                            <option value="Vitamins">Vitamins</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>
+                            <input type="checkbox" id="i-filter-lowstock"> Show Low Stock Only
+                        </label>
+                    </div>
+                    <button class="btn-primary" onclick="filterInputs()">Apply Filters</button>
+                    <button class="btn-secondary" onclick="clearInputFilters()">Clear</button>
+                </div>
+            </div>
+
+            <div class="card overflow-auto">
+                <div id="inputs-loading" class="loading">Loading...</div>
+                <table id="inputs-table-container" style="display:none;">
+                    <thead>
+                        <tr>
+                            <th>Date</th><th>Category</th><th>Product</th><th>Qty</th>
+                            <th>Unit</th><th>Supplier</th><th>Cost</th><th>Stock</th><th>Status</th><th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="input-table"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Reports Tab -->
+        <div id="reports-tab" class="tab-content">
+            <div class="card">
+                <h2>📊 Farm Reports & Analytics</h2>
+                <p style="color: #6b7280; margin-bottom: 1.5rem;">View comprehensive reports and insights about your farm operations</p>
+                
+                <div class="grid grid-3">
+                    <div class="report-card">
+                        <h4>🐔 Avg Egg Production</h4>
+                        <div class="report-value" id="report-avg-eggs">-</div>
+                        <p style="font-size: 0.875rem; color: #6b7280; margin-top: 0.25rem;">eggs per bird per day</p>
+                    </div>
+                    <div class="report-card">
+                        <h4>💰 Total Farm Costs</h4>
+                        <div class="report-value" id="report-total-costs">-</div>
+                        <p style="font-size: 0.875rem; color: #6b7280; margin-top: 0.25rem;">across all operations</p>
+                    </div>
+                    <div class="report-card">
+                        <h4>⚠️ Low Stock Items</h4>
+                        <div class="report-value" id="report-low-stock">-</div>
+                        <p style="font-size: 0.875rem; color: #6b7280; margin-top: 0.25rem;">items below minimum</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-2">
+                <div class="card">
+                    <h3>📈 Inputs by Category</h3>
+                    <div id="report-inputs-category"></div>
+                </div>
+                <div class="card">
+                    <h3>🌾 Crop Costs Breakdown</h3>
+                    <div id="report-crop-costs"></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>🐓 Poultry Performance (Last 30 Days)</h3>
+                <div id="report-poultry-performance"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = window.location.origin;
+        
+        // API calls
+        async function fetchAPI(endpoint, options = {}) {
+            try {
+                const response = await fetch(`${API_URL}${endpoint}`, options);
+                if (!response.ok) throw new Error('API request failed');
+                return await response.json();
+            } catch (error) {
+                console.error('API Error:', error);
+                alert('Failed to connect to server. Please check if the backend is running.');
+                return null;
+            }
+        }
+
+        // Tab switching
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.nav-button').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(tabName + '-tab').classList.add('active');
+            event.target.classList.add('active');
+            
+            if (tabName === 'reports') loadReports();
+        }
+
+        // Load overview data
+        async function loadOverview() {
+            const summary = await fetchAPI('/api/reports/summary');
+            if (summary) {
+                document.getElementById('total-poultry').textContent = summary.totalPoultry || 0;
+                document.getElementById('total-eggs').textContent = summary.totalEggs || 0;
+                document.getElementById('total-crop-area').textContent = summary.totalCropArea || 0;
+                document.getElementById('total-inputs-cost').textContent = summary.totalInputsCost || 0;
+            }
+
+            // Load low stock alerts
+            const inputs = await fetchAPI('/api/inputs?lowStock=true');
+            if (inputs && inputs.length > 0) {
+                const alertsHtml = '<div class="card"><h3>⚠️ Low Stock Alerts</h3>' +
+                    inputs.map(i => {
+                        const isCritical = i.currentStock < i.minStock * 0.5;
+                        const isOut = i.currentStock <= 0;
+                        return `<div class="alert ${isOut || isCritical ? 'urgent' : 'warning'}">
+                            ${isOut ? 'OUT OF STOCK' : isCritical ? 'CRITICAL LOW STOCK' : 'Low Stock'}: ${i.name} 
+                            (${i.currentStock}/${i.minStock} ${i.unit})
+                        </div>`;
+                    }).join('') + '</div>';
+                document.getElementById('alerts-section').innerHTML = alertsHtml;
+            } else {
+                document.getElementById('alerts-section').innerHTML = '';
+            }
+        }
+
+        // Poultry functions
+        async function loadPoultry(filters = {}) {
+            document.getElementById('poultry-loading').style.display = 'block';
+            document.getElementById('poultry-table-container').style.display = 'none';
+            
+            const params = new URLSearchParams(filters);
+            const data = await fetchAPI(`/api/poultry?${params}`);
+            
+            if (data) {
+                const tbody = document.getElementById('poultry-table');
+                tbody.innerHTML = data.map(p => `
+                    <tr>
+                        <td>${p.date}</td>
+                        <td><span class="badge ${p.type === 'Layers' ? 'blue' : 'amber'}">${p.type}</span></td>
+                        <td>${p.batchName || '—'}</td>
+                        <td>${p.count}</td>
+                        <td>${p.eggs}</td>
+                        <td>${p.feed}</td>
+                        <td>${p.mortality}</td>
+                        <td>${p.notes || '—'}</td>
+                        <td><button class="btn-danger" onclick="deletePoultry(${p.id})">Delete</button></td>
+                    </tr>
+                `).join('');
+                
+                document.getElementById('poultry-loading').style.display = 'none';
+                document.getElementById('poultry-table-container').style.display = 'table';
+            }
+        }
+
+        async function deletePoultry(id) {
+            if (!confirm('Delete this record?')) return;
+            await fetchAPI(`/api/poultry/${id}`, { method: 'DELETE' });
+            loadPoultry();
+            loadOverview();
+        }
+
+        function filterPoultry() {
+            const filters = {};
+            const start = document.getElementById('p-filter-start').value;
+            const end = document.getElementById('p-filter-end').value;
+            const type = document.getElementById('p-filter-type').value;
+            const batch = document.getElementById('p-filter-batch').value;
+            
+            if (start) filters.startDate = start;
+            if (end) filters.endDate = end;
+            if (type) filters.type = type;
+            if (batch) filters.batchName = batch;
+            
+            loadPoultry(filters);
+        }
+
+        function clearPoultryFilters() {
+            document.getElementById('p-filter-start').value = '';
+            document.getElementById('p-filter-end').value = '';
+            document.getElementById('p-filter-type').value = '';
+            document.getElementById('p-filter-batch').value = '';
+            loadPoultry();
+        }
+
+        document.getElementById('poultry-form').onsubmit = async (e) => {
+            e.preventDefault();
+            const data = {
+                date: document.getElementById('p-date').value,
+                type: document.getElementById('p-type').value,
+                count: document.getElementById('p-count').value,
+                eggs: document.getElementById('p-eggs').value || 0,
+                feed: document.getElementById('p-feed').value || 0,
+                mortality: document.getElementById('p-mortality').value || 0,
+                batchName: document.getElementById('p-batch').value,
+                notes: document.getElementById('p-notes').value
+            };
+            
+            await fetchAPI('/api/poultry', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            
+            e.target.reset();
+            loadPoultry();
+            loadOverview();
+        };
+
+        // Crops functions
+        async function loadCrops(filters = {}) {
+            document.getElementById('crops-loading').style.display = 'block';
+            document.getElementById('crops-table-container').style.display = 'none';
+            
+            const params = new URLSearchParams(filters);
+            const data = await fetchAPI(`/api/crops?${params}`);
+            
+            if (data) {
+                const tbody = document.getElementById('crop-table');
+                tbody.innerHTML = data.map(c => `
+                    <tr>
+                        <td>${c.date}</td>
+                        <td>${c.crop}</td>
+                        <td>${c.area}</td>
+                        <td><span class="badge green">${c.stage || '—'}</span></td>
+                        <td>${c.yield || '—'}</td>
+                        <td>${c.activities || '—'}</td>
+                        <td>$${c.cost}</td>
+                        <td><button class="btn-danger" onclick="deleteCrop(${c.id})">Delete</button></td>
+                    </tr>
+                `).join('');
+                
+                document.getElementById('crops-loading').style.display = 'none';
+                document.getElementById('crops-table-container').style.display = 'table';
+            }
+        }
+
+        async function deleteCrop(id) {
+            if (!confirm('Delete this record?')) return;
+            await fetchAPI(`/api/crops/${id}`, { method: 'DELETE' });
+            loadCrops();
+            loadOverview();
+        }
+
+        function filterCrops() {
+            const filters = {};
+            const start = document.getElementById('c-filter-start').value;
+            const end = document.getElementById('c-filter-end').value;
+            const crop = document.getElementById('c-filter-crop').value;
+            const stage = document.getElementById('c-filter-stage').value;
+            
+            if (start) filters.startDate = start;
+            if (end) filters.endDate = end;
+            if (crop) filters.crop = crop;
+            if (stage) filters.stage = stage;
+            
+            loadCrops(filters);
+        }
+
+        function clearCropFilters() {
+            document.getElementById('c-filter-start').value = '';
+            document.getElementById('c-filter-end').value = '';
+            document.getElementById('c-filter-crop').value = '';
+            document.getElementById('c-filter-stage').value = '';
+            loadCrops();
+        }
+
+        document.getElementById('crop-form').onsubmit = async (e) => {
+            e.preventDefault();
+            const data = {
+                date: document.getElementById('c-date').value,
+                crop: document.getElementById('c-name').value,
+                area: document.getElementById('c-area').value,
+                stage: document.getElementById('c-stage').value,
+                yield: document.getElementById('c-yield').value || 0,
+                activities: document.getElementById('c-activities').value,
+                cost: document.getElementById('c-cost').value || 0
+            };
+            
+            await fetchAPI('/api/crops', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            
+            e.target.reset();
+            loadCrops();
+            loadOverview();
+        };
+
+        // Inputs functions
+        async function loadInputs(filters = {}) {
+            document.getElementById('inputs-loading').style.display = 'block';
+            document.getElementById('inputs-table-container').style.display = 'none';
+            
+            const params = new URLSearchParams(filters);
+            const data = await fetchAPI(`/api/inputs?${params}`);
+            
+            if (data) {
+                const tbody = document.getElementById('input-table');
+                tbody.innerHTML = data.map(i => {
+                    let status = 'Good', color = 'green';
+                    if (i.minStock > 0) {
+                        if (i.currentStock <= 0) { status = 'OUT'; color = 'red'; }
+                        else if (i.currentStock < i.minStock * 0.5) { status = 'Critical'; color = 'red'; }
+                        else if (i.currentStock < i.minStock) { status = 'Low'; color = 'yellow'; }
+                    }
+                    return `
+                        <tr>
+                            <td>${i.date}</td>
+                            <td><span class="badge ${i.category === 'Fertilizer' ? 'green' : i.category === 'Feed' ? 'yellow' : 'purple'}">${i.category}</span></td>
+                            <td>${i.name}</td>
+                            <td>${i.quantity}</td>
+                            <td>${i.unit || '—'}</td>
+                            <td>${i.supplier || '—'}</td>
+                            <td>$${i.cost}</td>
+                            <td>${i.currentStock} ${i.unit || ''}</td>
+                            <td><span class="badge ${color}">${status}</span></td>
+                            <td><button class="btn-danger" onclick="deleteInput(${i.id})">Delete</button></td>
+                        </tr>
+                    `;
+                }).join('');
+                
+                document.getElementById('inputs-loading').style.display = 'none';
+                document.getElementById('inputs-table-container').style.display = 'table';
+            }
+        }
+
+        async function deleteInput(id) {
+            if (!confirm('Delete this record?')) return;
+            await fetchAPI(`/api/inputs/${id}`, { method: 'DELETE' });
+            loadInputs();
+            loadOverview();
+        }
+
+        function filterInputs() {
+            const filters = {};
+            const start = document.getElementById('i-filter-start').value;
+            const end = document.getElementById('i-filter-end').value;
+            const category = document.getElementById('i-filter-category').value;
+            const lowStock = document.getElementById('i-filter-lowstock').checked;
+            
+            if (start) filters.startDate = start;
+            if (end) filters.endDate = end;
+            if (category) filters.category = category;
+            if (lowStock) filters.lowStock = 'true';
+            
+            loadInputs(filters);
+        }
+
+        function clearInputFilters() {
+            document.getElementById('i-filter-start').value = '';
+            document.getElementById('i-filter-end').value = '';
+            document.getElementById('i-filter-category').value = '';
+            document.getElementById('i-filter-lowstock').checked = false;
+            loadInputs();
+        }
+
+        document.getElementById('input-form').onsubmit = async (e) => {
+            e.preventDefault();
+            const data = {
+                date: document.getElementById('i-date').value,
+                category: document.getElementById('i-category').value,
+                name: document.getElementById('i-name').value,
+                quantity: document.getElementById('i-qty').value,
+                unit: document.getElementById('i-unit').value,
+                supplier: document.getElementById('i-supplier').value,
+                cost: document.getElementById('i-cost').value || 0,
+                usedFor: document.getElementById('i-used').value,
+                currentStock: document.getElementById('i-stock').value || 0,
+                minStock: document.getElementById('i-min').value || 0,
+                usageRate: document.getElementById('i-rate').value || 0,
+                notes: document.getElementById('i-notes').value
+            };
+            
+            await fetchAPI('/api/inputs', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            
+            e.target.reset();
+            loadInputs();
+            loadOverview();
+        };
+
+        // Reports
+        async function loadReports() {
+            // Summary stats
+            const summary = await fetchAPI('/api/reports/summary');
+            if (summary) {
+                document.getElementById('report-low-stock').textContent = summary.lowStockAlerts;
+                document.getElementById('report-total-costs').textContent = '$' + (summary.totalInputsCost || 0);
+            }
+
+            // Avg eggs
+            const poultryPerf = await fetchAPI('/api/reports/poultry-performance');
+            if (poultryPerf && poultryPerf.length > 0) {
+                const avgEggs = (poultryPerf.reduce((sum, p) => sum + (p.eggPerBird || 0), 0) / poultryPerf.length).toFixed(2);
+                document.getElementById('report-avg-eggs').textContent = avgEggs;
+
+                // Display performance table
+                const perfHtml = `
+                    <table>
+                        <thead>
+                            <tr><th>Date</th><th>Type</th><th>Total Eggs</th><th>Total Feed</th><th>Mortality</th></tr>
+                        </thead>
+                        <tbody>
+                            ${poultryPerf.map(p => `
+                                <tr>
+                                    <td>${p.date}</td>
+                                    <td>${p.type}</td>
+                                    <td>${p.totalEggs}</td>
+                                    <td>${p.totalFeed} kg</td>
+                                    <td>${p.totalMortality}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+                document.getElementById('report-poultry-performance').innerHTML = perfHtml;
+            }
+
+            // Inputs by category
+            const inputsCat = await fetchAPI('/api/reports/inputs-by-category');
+            if (inputsCat) {
+                const catHtml = inputsCat.map(c => `
+                    <div style="display: flex; justify-content: space-between; padding: 0.75rem; border-bottom: 1px solid #e5e7eb;">
+                        <span style="font-weight: 500;">${c.category}</span>
+                        <span style="color: #16a34a; font-weight: bold;">$${c.totalCost}</span>
+                    </div>
+                `).join('');
+                document.getElementById('report-inputs-category').innerHTML = catHtml || '<p style="color: #6b7280;">No data available</p>';
+            }
+
+            // Crop costs
+            const cropCosts = await fetchAPI('/api/reports/crop-costs');
+            if (cropCosts) {
+                const cropHtml = cropCosts.map(c => `
+                    <div style="display: flex; justify-content: space-between; padding: 0.75rem; border-bottom: 1px solid #e5e7eb;">
+                        <span style="font-weight: 500;">${c.crop} (${c.totalArea} acres)</span>
+                        <span style="color: #16a34a; font-weight: bold;">$${c.totalCost}</span>
+                    </div>
+                `).join('');
+                document.getElementById('report-crop-costs').innerHTML = cropHtml || '<p style="color: #6b7280;">No data available</p>';
+            }
+        }
+
+        // Initialize on page load
+        window.onload = () => {
+            loadOverview();
+            loadPoultry();
+            loadCrops();
+            loadInputs();
+        };
+    </script>
+</body>
+</html>
